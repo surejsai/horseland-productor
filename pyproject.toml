@@ -1,0 +1,25 @@
+[project]
+name = "horseland-productor"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Surej Sajeev",email = "surejsajeev@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "pandas (>=2.3.2,<3.0.0)",
+    "openai (>=1.108.2,<2.0.0)",
+    "tenacity (>=9.1.2,<10.0.0)",
+    "asyncio (>=4.0.0,<5.0.0)",
+    "openpyxl (>=3.1.5,<4.0.0)",
+    "fastapi (>=0.115.0,<1.0.0)",
+    "uvicorn[standard] (>=0.38.0,<0.39.0)",
+    "python-multipart (>=0.0.20,<0.0.21)",
+    "python-dotenv (>=1.0.1,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Horseland Product Description Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg: linear-gradient(135deg, #0f172a, #0b1020);
+            --card: #0f1524;
+            --panel: #121a2d;
+            --accent: #4fd1c5;
+            --accent-2: #7dd3fc;
+            --text: #e6edf7;
+            --muted: #9fb2c9;
+            --danger: #f97373;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        .page {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 48px 24px 72px;
+        }
+        header {
+            margin-bottom: 32px;
+        }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(79, 209, 197, 0.12);
+            color: var(--accent);
+            font-size: 13px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        h1 {
+            margin: 10px 0 8px;
+            font-size: 32px;
+            letter-spacing: -0.02em;
+        }
+        .lede {
+            margin: 0;
+            color: var(--muted);
+            max-width: 720px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 960px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+        }
+        .form-card {
+            padding: 24px;
+        }
+        .field {
+            margin-bottom: 18px;
+        }
+        .field label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            background: rgba(255,255,255,0.08);
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px dashed rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.02);
+            color: var(--text);
+        }
+        .hint {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        button.primary {
+            background: linear-gradient(120deg, var(--accent), var(--accent-2));
+            color: #0a0f1d;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.08s ease, box-shadow 0.12s ease;
+        }
+        button.primary:active { transform: translateY(1px); }
+        button.secondary {
+            background: rgba(255,255,255,0.06);
+            color: var(--text);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .status-card h3, .form-card h3 {
+            margin: 0 0 12px;
+            font-size: 18px;
+            letter-spacing: -0.01em;
+        }
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+        .step {
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 12px;
+            background: var(--panel);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-height: 90px;
+        }
+        .step .label {
+            font-weight: 600;
+        }
+        .step .desc {
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(255,255,255,0.06);
+            color: var(--muted);
+        }
+        .pill.active { color: #0a0f1d; background: var(--accent); }
+        .pill.done { color: #0a0f1d; background: #c4f1f9; }
+        .pill.error { background: rgba(249, 115, 115, 0.15); color: #fecaca; }
+        .progress {
+            margin-top: 12px;
+        }
+        .progress-bar {
+            height: 12px;
+            width: 100%;
+            background: rgba(255,255,255,0.06);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(120deg, var(--accent), var(--accent-2));
+            transition: width 0.2s ease;
+        }
+        .row-stats {
+            display: flex;
+            justify-content: space-between;
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 6px;
+        }
+        .row-list {
+            margin-top: 12px;
+            max-height: 240px;
+            overflow: auto;
+            padding-right: 4px;
+        }
+        .row-item {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 10px;
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .row-item .status {
+            font-weight: 700;
+            color: var(--text);
+        }
+        .alert {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.06);
+            color: var(--muted);
+            font-size: 14px;
+        }
+        .alert.error {
+            border: 1px solid rgba(249,115,115,0.4);
+            color: #fecaca;
+        }
+        .log {
+            margin-top: 10px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+            color: #bcd6ff;
+            background: rgba(0,0,0,0.25);
+            border-radius: 10px;
+            padding: 10px;
+            max-height: 180px;
+            overflow: auto;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <div class="eyebrow">Horseland · Internal tooling</div>
+            <h1>Product Description Generator</h1>
+            <p class="lede">
+                Upload the products Excel (required) and an optional rulebook Excel. We will run <code>gen_runner.py</code>,
+                apply “Image ready” and compliance checks, send batches to GPT, and show per-row progress.
+            </p>
+        </header>
+
+        <div class="grid">
+            <section class="card form-card">
+                <h3>Upload files</h3>
+                <form id="runForm">
+                    <div class="field">
+                        <label for="productsFile">Products Excel <span class="badge">Required</span></label>
+                        <input type="file" id="productsFile" name="products" accept=".xlsx,.xls,.csv" required>
+                        <p class="hint">Primary input data (e.g., horseland_products.xlsx).</p>
+                    </div>
+                    <div class="field">
+                        <label for="rulesFile">Rulebook Excel <span class="badge">Optional</span></label>
+                        <input type="file" id="rulesFile" name="rules" accept=".xlsx,.xls,.csv">
+                        <p class="hint">Australian_Horse_Guide_Association_Rules_2025.xlsx, if you want runtime override.</p>
+                    </div>
+                    <div class="actions">
+                        <button class="primary" type="submit" id="submitBtn">Run generator</button>
+                        <button class="secondary" type="button" id="resetBtn">Reset</button>
+                        <button class="secondary" type="button" id="downloadBtn" disabled>Horsy detail</button>
+                        <span id="helperText" class="hint"></span>
+                    </div>
+                </form>
+                <div id="formAlert" class="alert" style="display:none;"></div>
+            </section>
+
+            <section class="card status-card">
+                <h3>Pipeline status</h3>
+                <div class="steps">
+                    <div class="step" id="step-ingest">
+                        <span class="pill" data-pill="ingest">waiting</span>
+                        <div class="label">Files staged</div>
+                        <div class="desc">Validating product Excel and rulebook.</div>
+                    </div>
+                    <div class="step" id="step-rules">
+                        <span class="pill" data-pill="rules">waiting</span>
+                        <div class="label">Image ready & compliance</div>
+                        <div class="desc">Applying rules, checking imagery pointers.</div>
+                    </div>
+                    <div class="step" id="step-gpt">
+                        <span class="pill" data-pill="gpt">waiting</span>
+                        <div class="label">Model processing</div>
+                        <div class="desc">Sending batches to GPT with safeguards.</div>
+                    </div>
+                    <div class="step" id="step-done">
+                        <span class="pill" data-pill="done">waiting</span>
+                        <div class="label">Packaging output</div>
+                        <div class="desc">Writing horseland_products_described.xlsx.</div>
+                    </div>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+                    <div class="row-stats">
+                        <span id="rowCountLabel">Rows: 0</span>
+                        <span id="rowProgressLabel">0% complete</span>
+                    </div>
+                </div>
+                <div class="row-list" id="rowList"></div>
+                <div class="log" id="logBox"></div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const RUN_ENDPOINT = 'http://localhost:8000/run-generator';
+        const PROGRESS_ENDPOINT = 'http://localhost:8000/progress';
+        const DOWNLOAD_PATH = 'http://localhost:8000/horseland_products_described.xlsx';
+
+        const form = document.getElementById('runForm');
+        const productsInput = document.getElementById('productsFile');
+        const rulesInput = document.getElementById('rulesFile');
+        const submitBtn = document.getElementById('submitBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const formAlert = document.getElementById('formAlert');
+        const rowList = document.getElementById('rowList');
+        const progressFill = document.getElementById('progressFill');
+        const rowCountLabel = document.getElementById('rowCountLabel');
+        const rowProgressLabel = document.getElementById('rowProgressLabel');
+        const logBox = document.getElementById('logBox');
+        const helperText = document.getElementById('helperText');
+
+        const pills = {
+            ingest: document.querySelector('[data-pill="ingest"]'),
+            rules: document.querySelector('[data-pill="rules"]'),
+            gpt: document.querySelector('[data-pill="gpt"]'),
+            done: document.querySelector('[data-pill="done"]'),
+        };
+
+        let totalRows = 0;
+        let processedRows = 0;
+        let pollTimer = null;
+
+        async function refreshDownloadState() {
+            try {
+                const res = await fetch(DOWNLOAD_PATH, { method: 'HEAD' });
+                downloadBtn.disabled = !res.ok;
+                if (res.ok) {
+                    log('Output file detected on backend; download enabled.');
+                }
+            } catch (e) {
+                downloadBtn.disabled = true;
+                log('Could not check output file: ' + (e?.message || e));
+            }
+        }
+
+        function resetUI() {
+            totalRows = 0;
+            processedRows = 0;
+            rowList.innerHTML = '';
+            progressFill.style.width = '0%';
+            rowCountLabel.textContent = 'Rows: 0';
+            rowProgressLabel.textContent = '0% complete';
+            logBox.textContent = '';
+            helperText.textContent = '';
+            formAlert.style.display = 'none';
+            ['ingest','rules','gpt','done'].forEach(k => setPill(k, 'waiting'));
+
+            if (pollTimer) {
+                clearInterval(pollTimer);
+                pollTimer = null;
+            }
+
+            downloadBtn.disabled = true; // assume no file until run completes
+        }
+
+        function setPill(key, state) {
+            const el = pills[key];
+            el.classList.remove('active','done','error');
+            if (state === 'active') {
+                el.textContent = 'in progress';
+                el.classList.add('active');
+            } else if (state === 'done') {
+                el.textContent = 'done';
+                el.classList.add('done');
+            } else if (state === 'error') {
+                el.textContent = 'error';
+                el.classList.add('error');
+            } else {
+                el.textContent = 'waiting';
+            }
+        }
+
+        function log(line) {
+            const now = new Date().toLocaleTimeString();
+            logBox.textContent += `[${now}] ${line}\n`;
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function renderRow(row, status) {
+            const div = document.createElement('div');
+            div.className = 'row-item';
+            div.innerHTML = `<div class="status">Row ${row}</div><div>${status}</div>`;
+            rowList.appendChild(div);
+            rowList.scrollTop = rowList.scrollHeight;
+        }
+
+        function updateProgress() {
+            const pct = totalRows ? Math.round((processedRows / totalRows) * 100) : 0;
+            progressFill.style.width = `${pct}%`;
+            rowProgressLabel.textContent = `${pct}% complete`;
+            rowCountLabel.textContent = `Rows: ${totalRows || 'unknown'}`;
+        }
+
+        async function pollProgress() {
+            try {
+                const res = await fetch(PROGRESS_ENDPOINT);
+                if (!res.ok) return;
+                const data = await res.json();
+
+                totalRows = data.total_rows || totalRows;
+                processedRows = data.processed_rows || 0;
+                updateProgress();
+
+                // Update pills based on status
+                if (data.status === 'running') {
+                    setPill('ingest', 'done');
+                    setPill('rules', 'done');
+                    setPill('gpt', 'active');
+                } else if (data.status === 'done') {
+                    setPill('gpt', 'done');
+                    setPill('done', 'done');
+                    helperText.textContent = 'Complete. Output file: horseland_products_described.xlsx';
+                    if (pollTimer) {
+                        clearInterval(pollTimer);
+                        pollTimer = null;
+                    }
+                    await refreshDownloadState(); // enable button only now
+                } else if (data.status === 'error') {
+                    setPill('gpt', 'error');
+                    setPill('done', 'error');
+                    if (data.error) {
+                        showAlert(`Backend error: ${data.error}`, true);
+                        log(`Error: ${data.error}`);
+                    }
+                    if (pollTimer) {
+                        clearInterval(pollTimer);
+                        pollTimer = null;
+                    }
+                }
+
+                // Render per-row statuses from backend
+                rowList.innerHTML = '';
+                const rows = data.rows || [];
+                for (const r of rows) {
+                    renderRow(r.row, r.status);
+                }
+            } catch (e) {
+                console.warn('pollProgress error', e);
+            }
+        }
+
+        async function handleSubmit(evt) {
+            evt.preventDefault();
+            if (!productsInput.files.length) {
+                showAlert('Please select the required products Excel.', true);
+                return;
+            }
+
+            resetUI();
+            submitBtn.disabled = true;
+            setPill('ingest', 'active');
+            helperText.textContent = 'Starting generator...';
+
+            const productFile = productsInput.files[0];
+            const rulesFile = rulesInput.files[0];
+
+            try {
+                const formData = new FormData();
+                formData.append('products', productFile);
+                if (rulesFile) formData.append('rules', rulesFile);
+
+                const response = await fetch(RUN_ENDPOINT, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const respBody = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    const detail = respBody?.detail || JSON.stringify(respBody) || `status ${response.status}`;
+                    throw new Error(`Server error: ${detail}`);
+                }
+
+                const possibleTotal = respBody?.total_rows;
+                if (possibleTotal) {
+                    totalRows = possibleTotal;
+                    rowCountLabel.textContent = `Rows: ${totalRows}`;
+                    log(`Server reports ${totalRows} rows to process.`);
+                }
+
+                setPill('ingest', 'done');
+                setPill('rules', 'done');
+                setPill('gpt', 'active');
+                helperText.textContent = 'Processing rows...';
+
+                // Start polling backend progress
+                pollTimer = setInterval(pollProgress, 1000);
+            } catch (err) {
+                const msg = err?.message || String(err);
+                setPill('gpt', 'error');
+                showAlert(msg, true);
+                log(`Error: ${msg}`);
+            } finally {
+                submitBtn.disabled = false;
+            }
+        }
+
+        function showAlert(msg, isError = false) {
+            formAlert.textContent = msg;
+            formAlert.style.display = 'block';
+            formAlert.classList.toggle('error', isError);
+        }
+
+        form.addEventListener('submit', handleSubmit);
+        resetBtn.addEventListener('click', () => {
+            form.reset();
+            resetUI();
+        });
+        downloadBtn.addEventListener('click', () => {
+            if (downloadBtn.disabled) return;
+            window.location.href = DOWNLOAD_PATH;
+        });
+
+        resetUI();
+    </script>
+</body>
+</html>
