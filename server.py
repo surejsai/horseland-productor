@@ -3,10 +3,9 @@ from pathlib import Path
 from typing import Optional, Dict, Any
 
 import pandas as pd
-from fastapi import FastAPI, File, HTTPException, UploadFile, Response
+from fastapi import FastAPI, File, UploadFile, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
-
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 
 from product_generator import generate_contextualized_descriptions_batched
 
@@ -17,6 +16,16 @@ WORK_DIR = ROOT / "_work"
 WORK_DIR.mkdir(exist_ok=True)
 
 app = FastAPI(title="Horseland Generator API (with progress)")
+ROOT = Path(__file__).parent.resolve()
+STATIC_DIR = ROOT / "static"
+INDEX_HTML = STATIC_DIR / "index.html"
+
+@app.get("/", response_class=HTMLResponse)
+def index():
+    if not INDEX_HTML.exists():
+        raise HTTPException(status_code=500, detail="index.html not found on server")
+    return INDEX_HTML.read_text(encoding="utf-8")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

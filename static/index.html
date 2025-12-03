@@ -318,9 +318,11 @@
     </div>
 
     <script>
-        const RUN_ENDPOINT = 'http://localhost:8000/run-generator';
-        const PROGRESS_ENDPOINT = 'http://localhost:8000/progress';
-        const DOWNLOAD_PATH = 'http://localhost:8000/horseland_products_described.xlsx';
+        // Instead of http://localhost:8000/...
+        const RUN_ENDPOINT = '/run-generator';
+        const PROGRESS_ENDPOINT = '/progress';
+        const DOWNLOAD_PATH = '/horseland_products_described.xlsx';
+
 
         const form = document.getElementById('runForm');
         const productsInput = document.getElementById('productsFile');
